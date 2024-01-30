@@ -19,14 +19,14 @@ Cypress.Commands.add('login', (
       //Foi utilizado o 'data-qa-selector' para mapear os objetos, mas poderia ser utilizado o ID sem problemas.
     }
   
-    login()
+    login() //Pelo fato do "const login" ser uma função, precisamos retornar a função, e por isso tem este "login()"
   })
 
 
 Cypress.Commands.add('logout', () =>{
 
   cy.get('.qa-user-avatar').click()
-  cy.contains('Sign out').click
+  cy.contains('Sign out').click()
 
 })
   
