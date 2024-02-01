@@ -34,8 +34,8 @@ Cypress.Commands.add('gui_createProject', project =>{
 
   cy.visit('/projects/new')
 
-  cy.get('#project_name').type(project.name)
-  cy.get('#project_description').type(project.description)
+  cy.get('#project_name').type(project.name, {delay: 0})
+  cy.get('#project_description').type(project.description, {delay: 0})
   cy.get('#project_initialize_with_readme').check()
   cy.contains('Create project').click()
 
