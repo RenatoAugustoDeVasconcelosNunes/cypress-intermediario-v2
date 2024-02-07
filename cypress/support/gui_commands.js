@@ -3,6 +3,7 @@
 Cypress.Commands.add('login', (
     user = Cypress.env('user_name'),
     password = Cypress.env('user_password'),
+    { cacheSession  = true } = {},
   ) => {
     const login = () => {
       cy.visit('/users/sign_in') //Está sendo colocado apenas /users/sign_in, porque no arquivo "cypress.config.js", foi definida
@@ -18,8 +19,29 @@ Cypress.Commands.add('login', (
 
       //Foi utilizado o 'data-qa-selector' para mapear os objetos, mas poderia ser utilizado o ID sem problemas.
     }
+
+    //Utilizada para validar que está na página home
+    const validate = () => {
+      cy.visit('/')
+      cy.location('pathname', { timeout: 1000 }) //Pega o pathname em 1 segundo (1000 milisegundos), e verifica que não é igual a /users/sign_in
+        .should('not.eq', '/users/sign_in')
+    }
+
+
+    const options = {
+      cacheAcrossSpecs: true,
+      validate,
+    }
+
+    if (cacheSession){
+
+      cy.session(user, login, options)
+    } 
+    else {
+      login() //Pelo fato do "const login" ser uma função, precisamos retornar a função, e por isso tem este "login()"
+    }
   
-    login() //Pelo fato do "const login" ser uma função, precisamos retornar a função, e por isso tem este "login()"
+    
   })
 
 
@@ -41,5 +63,25 @@ Cypress.Commands.add('gui_createProject', project =>{
 
 
 
+})
+
+
+Cypress.Commands.add('gui_createIssue', issue =>{
+//shortcuts-issues qa-issues-item
+  cy.get('.qa-issues-item').click()
+  cy.get('#new_issue_link').click()
+  cy.get('#issue_title').type(issue.title, {delay: 0})
+  cy.get('#issue_description').type(issue.description, {delay: 0})
+  cy.contains('Submit issue').click()  
+
+
+})
+
+Cypress.Commands.add('gui_createIssueOtimizada', issue => {
+  cy.visit(`/${Cypress.env('user_name')}/${issue.project.name}/issues/new`)
+
+  cy.get('.qa-issuable-form-title').type(issue.title)
+  cy.get('.qa-issuable-form-description').type(issue.description)
+  cy.contains('Submit issue').click()
 })
   
