@@ -4,7 +4,7 @@ describe('Create Project', ()=>{
 
     //Pré condição
     beforeEach(()=>{
-
+        cy.api_DeleteAllProjects()
         cy.login()
         
     })

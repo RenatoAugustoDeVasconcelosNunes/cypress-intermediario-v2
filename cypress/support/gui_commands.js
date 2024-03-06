@@ -55,7 +55,6 @@ Cypress.Commands.add('logout', () =>{
 Cypress.Commands.add('gui_createProject', project =>{
 
   cy.visit('/projects/new')
-
   cy.get('#project_name').type(project.name, {delay: 0})
   cy.get('#project_description').type(project.description, {delay: 0})
   cy.get('#project_initialize_with_readme').check()
@@ -80,8 +79,8 @@ Cypress.Commands.add('gui_createIssue', issue =>{
 Cypress.Commands.add('gui_createIssueOtimizada', issue => {
   cy.visit(`/${Cypress.env('user_name')}/${issue.project.name}/issues/new`)
 
-  cy.get('.qa-issuable-form-title').type(issue.title)
-  cy.get('.qa-issuable-form-description').type(issue.description)
+  cy.get('.qa-issuable-form-title').type(issue.title, {delay: 0})
+  cy.get('.qa-issuable-form-description').type(issue.description, {delay: 0})
   cy.contains('Submit issue').click()
 })
   

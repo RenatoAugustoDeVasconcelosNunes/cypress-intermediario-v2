@@ -17,7 +17,7 @@ describe('Create Issue', ()=>{
 
     //Pré condição
     beforeEach(()=>{
-
+        cy.api_DeleteAllProjects()
         cy.login()
         cy.gui_createProject(project)
         

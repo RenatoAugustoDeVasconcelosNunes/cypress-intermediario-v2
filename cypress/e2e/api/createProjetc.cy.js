@@ -4,6 +4,8 @@ import { faker } from '@faker-js/faker'
 
 describe ('Create Project', () => {
 
+    beforeEach(() => cy.api_DeleteAllProjects())
+
     it('sucessfully', () => {
 
         const project = {
@@ -20,6 +22,7 @@ describe ('Create Project', () => {
 
             })
     })
+
     
 
 })

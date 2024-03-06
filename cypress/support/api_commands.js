@@ -1,13 +1,13 @@
 const acessToken = `Bearer ${Cypress.env('gitlab_access_token')}`
 const urlAuth = 'http://localhost:8089/api/v1/auth'
 const urlViagens = 'http://localhost:8089/api/v1/viagens'
-const authorizationToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbkBlbWFpbC5jb20iLCJyb2xlIjoiUk9MRV9BRE1JTiIsImNyZWF0ZWQiOjE3MDgxMzIxMDA1MTksImV4cCI6MTcwODIzMjA5OX0.lMM5IxDR0gIgxRIw5Ueqqhcfm_xihfEh_P_T5PRd6051IzZZQwkGfYXh5mckB_eYvIt4IUhMoQUmuPiIRcmmSQ'
+const authorizationToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbkBlbWFpbC5jb20iLCJyb2xlIjoiUk9MRV9BRE1JTiIsImNyZWF0ZWQiOjE3MDk2NDQ1NTgxMTEsImV4cCI6MTcwOTc0NDU1N30.hwpflId4I2Olymdv1TCjtoMLZNCcqs6UvI434TUTeQuubfkJsKy647-1xxwXgFAwpU-up2ULu074iFbDpSIWcw'
 
 
 
 Cypress.Commands.add('api_CreateProject', project => {
 
-    cy.request({
+    cy.api({
 
         method: 'POST',
         url: `/api/v4/projects/`,
@@ -23,10 +23,39 @@ Cypress.Commands.add('api_CreateProject', project => {
 })
 
 
+Cypress.Commands.add('api_GetAllProjects', ()=>{
+
+    cy.api({
+
+        method: 'GET',
+        url: '/api/v4/projects/',
+        headers: {Authorization: acessToken},
+
+    })
+})
+
+
+Cypress.Commands.add('api_DeleteAllProjects', ()=>{
+
+    cy.api_GetAllProjects()
+        .then(res => res.body.forEach(project => 
+            
+            cy.api({
+                method:'DELETE', 
+                url: `/api/v4/projects/${project.id}`,
+                headers: {Authorization: acessToken},
+        })))
+})
+
+
+
+
+
+//API ANTÔNIO MONTANHA:
 
 Cypress.Commands.add('api_fazerLoginComAdministrador', ()=>{
 
-    cy.request({
+    cy.api({
 
         method: 'POST',
         url: urlAuth,
@@ -40,12 +69,13 @@ Cypress.Commands.add('api_fazerLoginComAdministrador', ()=>{
 
 
 Cypress.Commands.add('api_cadastrarViagem', dadosViagem =>{
-
-    cy.request({
-
+    
+    cy.api({
+        
         method: 'POST',
         url: urlViagens,
         body: {
+            
             acompanhante: dadosViagem.acompanhante,
             dataPartida: dadosViagem.dataPartida,
             dataRetorno: dadosViagem.dataRetorno,
@@ -55,3 +85,27 @@ Cypress.Commands.add('api_cadastrarViagem', dadosViagem =>{
         headers: {Authorization: authorizationToken},
     })
 })
+
+
+
+Cypress.Commands.add('api_cadastrarViagem_com_plugin_API', dadosViagem =>{
+    
+
+    cy.api({
+        
+        method: 'POST',
+        url: urlViagens,
+        body: {
+            
+            acompanhante: dadosViagem.acompanhante,
+            dataPartida: dadosViagem.dataPartida,
+            dataRetorno: dadosViagem.dataRetorno,
+            localDeDestino: dadosViagem.localDeDestino,
+            regiao: dadosViagem.regiao
+        },
+        headers: {Authorization: authorizationToken},
+    })
+})
+
+
+

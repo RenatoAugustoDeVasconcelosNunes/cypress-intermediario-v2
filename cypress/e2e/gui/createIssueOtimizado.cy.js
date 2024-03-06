@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 
 describe('Create Issue', () => {
+
   const issue = {
     title: `issue-${faker.datatype.uuid()}`,
     description: faker.random.words(3),
@@ -13,14 +14,19 @@ describe('Create Issue', () => {
   }
 
   beforeEach(() => {
+    cy.api_DeleteAllProjects()
+    cy.api_CreateProject(issue.project)
     cy.login()
-    cy.gui_createProject(issue.project) //Como parâmetro, é enviada as informações do objeto "project", que estão armazenadas na 
+
+
+    // cy.gui_createProject(issue.project) //Como parâmetro, é enviada as informações do objeto "project", que estão armazenadas na 
                                         //variável issue. Por isso dentro do parêntese está "issue.project", porque o objeto
                                         //"project" está dentro da variável "issue" (é como se fosse uma cadeia de acesso).
   })
 
   it('successfully', () => {
     cy.gui_createIssueOtimizada(issue)
+
 
     cy.get('.issue-details')
       .should('contain', issue.title)
