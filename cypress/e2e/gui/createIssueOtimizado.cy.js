@@ -1,6 +1,9 @@
 import { faker } from '@faker-js/faker'
 
-describe('Create Issue', () => {
+const options = { env: { snapshotOnly: true } }
+
+
+describe('Create Issue', options, () => {
 
   const issue = {
     title: `issue-${faker.datatype.uuid()}`,
@@ -15,8 +18,8 @@ describe('Create Issue', () => {
 
   beforeEach(() => {
     cy.api_DeleteAllProjects()
-    cy.api_CreateProject(issue.project)
     cy.login()
+    cy.api_CreateProject(issue.project)
 
 
     // cy.gui_createProject(issue.project) //Como parâmetro, é enviada as informações do objeto "project", que estão armazenadas na 

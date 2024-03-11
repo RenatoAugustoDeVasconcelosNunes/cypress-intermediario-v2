@@ -48,6 +48,30 @@ Cypress.Commands.add('api_DeleteAllProjects', ()=>{
 })
 
 
+Cypress.Commands.add('api_CreateIssue', issue =>{
+
+    //Pré-condição (para criar uma Issue, é necessário ter um projeto criado)
+   cy.api_CreateProject(issue.project)
+
+   //Dados de entrada. Está sendo realizado um then, para que seja possível pegar o id da requisição de criação de projeto, e passar
+   //na url do POST de criação da Issue.
+    .then(response => {
+        cy.api({
+         method:'POST', 
+         url: `/api/v4/projects/${response.body.id}/issues`,
+         body:{
+            title: issue.title,
+            description: issue.description
+         },
+         headers: {Authorization: acessToken},
+        })
+    })
+})
+
+
+
+
+
 
 
 
