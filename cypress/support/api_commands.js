@@ -1,7 +1,10 @@
+import { faker } from '@faker-js/faker'
+
 const acessToken = `Bearer ${Cypress.env('gitlab_access_token')}`
-const urlAuth = 'http://localhost:8089/api/v1/auth'
-const urlViagens = 'http://localhost:8089/api/v1/viagens'
-const authorizationToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbkBlbWFpbC5jb20iLCJyb2xlIjoiUk9MRV9BRE1JTiIsImNyZWF0ZWQiOjE3MDk2NDQ1NTgxMTEsImV4cCI6MTcwOTc0NDU1N30.hwpflId4I2Olymdv1TCjtoMLZNCcqs6UvI434TUTeQuubfkJsKy647-1xxwXgFAwpU-up2ULu074iFbDpSIWcw'
+const urlAuth = Cypress.env('urlAuth')
+const urlViagens = Cypress.env('urlViagens')
+const urlStatusController = Cypress.env('urlStatusController')
+
 
 
 
@@ -77,6 +80,18 @@ Cypress.Commands.add('api_CreateIssue', issue =>{
 
 //API ANTÔNIO MONTANHA:
 
+
+Cypress.Commands.add('api_validaStatusAplicacaoController', () =>{
+
+    cy.api({
+        method: 'GET',
+        url: urlStatusController
+    })
+    .then(response => {
+        expect(response.status).to.equal(200)
+    })
+})
+
 Cypress.Commands.add('api_fazerLoginComAdministrador', ()=>{
 
     cy.api({
@@ -84,52 +99,142 @@ Cypress.Commands.add('api_fazerLoginComAdministrador', ()=>{
         method: 'POST',
         url: urlAuth,
         body: {
-            email: 'admin@email.com',
-            senha: '654321'
+            email: Cypress.env('emailAdm'),
+            senha: Cypress.env('senhaAdm')
         },
 
     })
 })
 
+
+
+Cypress.Commands.add('api_fazerLoginComUsuario', ()=>{
+
+    cy.api({
+
+        method: 'POST',
+        url: urlAuth,
+        body: {
+            email: Cypress.env('emailUser'),
+            senha: Cypress.env('senhaUser')
+        },
+
+    })
+})
 
 Cypress.Commands.add('api_cadastrarViagem', dadosViagem =>{
-    
-    cy.api({
+
+    cy.api_fazerLoginComAdministrador()
+        .then(response => {
+            cy.api({
         
-        method: 'POST',
-        url: urlViagens,
-        body: {
-            
-            acompanhante: dadosViagem.acompanhante,
-            dataPartida: dadosViagem.dataPartida,
-            dataRetorno: dadosViagem.dataRetorno,
-            localDeDestino: dadosViagem.localDeDestino,
-            regiao: dadosViagem.regiao
-        },
-        headers: {Authorization: authorizationToken},
-    })
+            method: 'POST',
+            url: urlViagens,
+            body: {
+                
+                acompanhante: dadosViagem.acompanhante,
+                dataPartida: dadosViagem.dataPartida,
+                dataRetorno: dadosViagem.dataRetorno,
+                localDeDestino: dadosViagem.localDeDestino,
+                regiao: dadosViagem.regiao
+                },
+            headers: {Authorization: response.body.data.token},
+            })
+
+        })
+    
+})
+
+
+Cypress.Commands.add('api_retornaTodasAsViagens', () =>{
+
+    cy.api_fazerLoginComUsuario()
+        .then(response =>{
+            cy.api({
+                method: 'GET',
+                url: urlViagens,
+                headers: {Authorization: response.body.data.token}
+            })
+        })
+
+})
+
+
+Cypress.Commands.add('api_retornaViagemDeRegiaoEspecifica', (regiaoEspecifica) =>{
+
+    cy.api_fazerLoginComUsuario()
+        .then(response=>{
+            expect(response.status).to.equal(200)
+
+            cy.api({
+                method: 'GET',
+                url: `${urlViagens}?regiao=${regiaoEspecifica}`,
+                headers: {Authorization: response.body.data.token}
+                })
+        })
+    
+    
 })
 
 
 
-Cypress.Commands.add('api_cadastrarViagem_com_plugin_API', dadosViagem =>{
-    
+Cypress.Commands.add('api_alterarDadosViagem', (informacaoParaAlterar, dadoParaAlterar, idParaAlterar, dadosViagem) =>{
 
-    cy.api({
-        
-        method: 'POST',
-        url: urlViagens,
-        body: {
-            
-            acompanhante: dadosViagem.acompanhante,
-            dataPartida: dadosViagem.dataPartida,
-            dataRetorno: dadosViagem.dataRetorno,
-            localDeDestino: dadosViagem.localDeDestino,
-            regiao: dadosViagem.regiao
-        },
-        headers: {Authorization: authorizationToken},
-    })
+    cy.condicionaisAlteracaoDadosViagem(dadoParaAlterar, idParaAlterar, informacaoParaAlterar, dadosViagem)
+
 })
 
+
+Cypress.Commands.add('condicionaisAlteracaoDadosViagem', (dadoParaAlterar, idParaAlterar, informacaoParaAlterar, dadosCadastroViagem) =>{
+
+
+
+   cy.api_fazerLoginComAdministrador()
+        .then(response =>{
+            expect(response.status).to.equal(200)
+            
+            if (informacaoParaAlterar == 'Acompanhante'){
+
+                cy.api({
+
+                    method: 'PUT',
+                    url: `${urlViagens}/${idParaAlterar}`,
+                    body:{
+                        acompanhante: dadoParaAlterar,
+                        dataPartida: dadosCadastroViagem.dataPartida,
+                        dataRetorno: dadosCadastroViagem.dataRetorno,
+                        localDeDestino: dadosCadastroViagem.localDeDestino,
+                        regiao: dadosCadastroViagem.regiao
+                        },
+                        headers: {Authorization: response.body.data.token}
+                })
+
+            }
+
+
+        })
+
+})
+
+
+Cypress.Commands.add('api_deletaViagens', () =>{
+
+    cy.api_fazerLoginComAdministrador()
+        .then(response => {
+            expect(response.status).to.equal(200)
+
+            cy.api_retornaTodasAsViagens()
+                .then(resp => resp.body.data.forEach(respForEach =>{
+
+                    expect(resp.status).to.equal(200)
+                    
+                    cy.api({
+                        method: 'DELETE',
+                        url: `${urlViagens}/${respForEach.id}`,
+                        headers: {Authorization: response.body.data.token} 
+                    })
+                }))
+        })
+})
 
 
