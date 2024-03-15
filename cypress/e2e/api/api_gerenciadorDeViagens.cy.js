@@ -8,20 +8,15 @@ describe ('api_antonioMontanha', ()=>{
         cy.api_deletaViagens()
     })
 
-    beforeEach(()=>{
-        cy.api_DeleteAllProjects()
-        cy.login()
-        cy.gui_createProject(project)
-        
-    })
-
-
+   
     it('logarComAdministrador', ()=>{
 
         cy.api_fazerLoginComAdministrador()
             .then(response =>{
                 expect(response.status).to.equal(200)
-                // print(response.body.data.token)
+                expect(response.body).is.not.empty
+                expect(response.body.data.token).is.not.empty
+
             })
     })
 
@@ -38,6 +33,7 @@ describe ('api_antonioMontanha', ()=>{
         cy.api_cadastrarViagem(dadosViagem)
             .then(response =>{
                 expect(response.status).to.equal(201)
+                expect(response.body).is.not.empty
                 expect(response.body.data.localDeDestino).to.equal(dadosViagem.localDeDestino)
                 expect(response.body.data.dataPartida).to.equal(dadosViagem.dataPartida)
                 expect(response.body.data.dataRetorno).to.equal(dadosViagem.dataRetorno)
@@ -53,6 +49,7 @@ describe ('api_antonioMontanha', ()=>{
         cy.api_retornaTodasAsViagens()
             .then(response => {
                 expect(response.status).to.equal(200)
+                expect(response.body).is.not.empty
             })
 
     })
@@ -76,9 +73,10 @@ describe ('api_antonioMontanha', ()=>{
 
         //Dados de Entrada
         cy.api_retornaViagemDeRegiaoEspecifica(dadosViagem.regiao)
-            .then(resp => resp.body.data.forEach(project =>{
+            .then(resp => resp.body.data.forEach(respForEach =>{
                 expect(resp.status).to.equal(200)
-                expect(project.regiao).to.equal(dadosViagem.regiao)
+                expect(respForEach.id).is.not.null
+                expect(respForEach.regiao).to.equal(dadosViagem.regiao)
             }))
 
         
@@ -98,19 +96,21 @@ describe ('api_antonioMontanha', ()=>{
         const nomeAcompanhante = faker.name.firstName()
 
         cy.api_cadastrarViagem(dadosViagem)
-            .then(response =>{
-                expect(response.status).to.equal(201)
+            .then(responseCadastrarViagem =>{
+                expect(responseCadastrarViagem.status).to.equal(201)
+                expect(responseCadastrarViagem.body.data.id).is.not.null
 
                 //Dados de entrada:
-                cy.api_alterarDadosViagem('Acompanhante', nomeAcompanhante, response.body.data.id, dadosViagem)
-                    .then(resp =>{
-                        expect(resp.status).to.equal(204)
-                        
+                cy.api_alterarDadosViagem('Acompanhante', nomeAcompanhante, responseCadastrarViagem.body.data.id, dadosViagem)
+                    .then(respAlteraDados =>{
+                        expect(respAlteraDados.status).to.equal(204)
+                                                
                         cy.api_retornaViagemDeRegiaoEspecifica(dadosViagem.regiao)
-                        .then(resp => resp.body.data.forEach(project =>{
-                            expect(resp.status).to.equal(200)
-                            expect(project.regiao).to.equal(dadosViagem.regiao)
-                            expect(project.id).to.equal(response.body.data.id)
+                        .then(respRetornaViagem => respRetornaViagem.body.data.forEach(respForEach =>{
+                            expect(respRetornaViagem.status).to.equal(200)
+                            expect(respForEach.regiao).to.equal(dadosViagem.regiao)
+                            expect(respForEach.id).to.equal(responseCadastrarViagem.body.data.id)
+                            expect(respForEach.acompanhante).to.equal(nomeAcompanhante)
                         }))
 
                  })
@@ -121,11 +121,19 @@ describe ('api_antonioMontanha', ()=>{
 
     it('deletarViagemEspecifica', () =>{
 
-        cy.api_deletaViagemEspecifica()
-        .then(resp => {
-            expect(resp.status).to.equal(204)
-            expect(resp.body).is.empty
-        })
+        const dadosViagem = {
+            acompanhante: faker.name.firstName(),
+            dataPartida: '2024-02-20',
+            dataRetorno: '2024-03-20',
+            localDeDestino: faker.random.word(),
+            regiao: faker.random.word()
+        }
+        
+        cy.api_deletaViagemEspecifica(dadosViagem)
+            .then(respDeletaViagem =>{
+                expect(respDeletaViagem.status).to.equal(204)
+            })
+        
     })
 
 })

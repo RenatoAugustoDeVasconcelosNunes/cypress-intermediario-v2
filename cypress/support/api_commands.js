@@ -224,17 +224,47 @@ Cypress.Commands.add('api_deletaViagens', () =>{
             expect(response.status).to.equal(200)
 
             cy.api_retornaTodasAsViagens()
-                .then(resp => resp.body.data.forEach(respForEach =>{
+                .then(resp => resp.body.data.forEach(respForEach =>
 
-                    expect(resp.status).to.equal(200)
+                    // expect(resp.status).to.equal(200),
+                    
+                        cy.api({
+                            method: 'DELETE',
+                            url: `${urlViagens}/${respForEach.id}`,
+                            headers: {Authorization: response.body.data.token} 
+                    })))
+        })
+})
+
+
+
+Cypress.Commands.add('api_deletaViagemEspecifica', (dadosViagem) =>{
+
+   cy.api_cadastrarViagem(dadosViagem)
+    .then(respCadastro =>{
+        expect(respCadastro.status).to.equal(201)
+
+        cy.api_retornaTodasAsViagens()
+        .then(respRetornaViagens => {
+
+            expect(respRetornaViagens.status).to.equal(200)
+
+            cy.api_fazerLoginComAdministrador()
+                .then(respLoginAdm =>{
+                    expect(respLoginAdm.status).to.equal(200)
                     
                     cy.api({
                         method: 'DELETE',
-                        url: `${urlViagens}/${respForEach.id}`,
-                        headers: {Authorization: response.body.data.token} 
+                        url: `${urlViagens}/${respCadastro.body.data.id}`,
+                        headers: {Authorization: respLoginAdm.body.data.token} 
                     })
-                }))
+
+                })
+                
         })
+    
+    })
+
 })
 
 
