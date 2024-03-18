@@ -64,6 +64,10 @@ Cypress.Commands.add('gui_createProject', project =>{
 
 })
 
+Cypress.Commands.add('gui_createMileston', ()=>{
+  
+})
+
 
 Cypress.Commands.add('gui_createIssue', issue =>{
 //shortcuts-issues qa-issues-item
@@ -84,3 +88,9 @@ Cypress.Commands.add('gui_createIssueOtimizada', issue => {
   cy.contains('Submit issue').click()
 })
   
+
+Cypress.Commands.add('gui_setLabelOnIssue', label => {
+  cy.get('.qa-edit-link-labels').click()
+  cy.contains(label.name).click()
+  cy.get('body').click()
+})
