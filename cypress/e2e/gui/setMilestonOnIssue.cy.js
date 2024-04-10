@@ -13,19 +13,26 @@ describe('setMilestonOnIssue', () =>{
 
     }
 
+    const milestone = {
+        title: `milestone-${faker.random.word()}`
+      }
+
 
     beforeEach(() => {
         cy.api_DeleteAllProjects()
         cy.login()
         cy.api_CreateIssue(issue)
           .then(response => {
+            cy.api_createMilestone(response.body.project_id, milestone)
             cy.visit(`${Cypress.env('user_name')}/${issue.project.name}/issues/${response.body.iid}`)
           })
       })
 
       it('successfully', () =>{
 
-        
+        cy.gui_setMilestoneOnIssue(milestone)
+
+        cy.get('.block.milestone').should('contain', milestone.title)
 
       })
 
